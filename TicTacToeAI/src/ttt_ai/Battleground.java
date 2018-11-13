@@ -30,10 +30,12 @@ public class Battleground {
 			}
 		}
 		HumanNN nn = new HumanNN(27,9,3,5);
+		NNFiler nnf = new NNFiler();
+		nnf.write(generation.getBest(), 2);
 		while(true) {
-			Game game = new Game(nn, generation.getBest());
+			Game game = new Game(nn, nnf.read(2));
 			game.playGame();
-			Game game2 = new Game(generation.getBest(), nn);
+			Game game2 = new Game(nnf.read(2), nn);
 			game2.playGame();
 		}
 	}
@@ -52,7 +54,8 @@ public class Battleground {
 		}
 	}
 	
+	
 	public static void main(String[] args) {
-		new Battleground(50);
+		new Battleground(1);
 	}
 }

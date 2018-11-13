@@ -19,7 +19,11 @@ public class NN implements Comparable<NN>, Serializable {
 	float turnAverage;
 	float winCount = 0;
 	int tempCount = 0;
-
+	int losingTurnCount = 0;
+	int losingGamesNumber = 0;
+	int randomFactor;
+	
+	
 	// For creating first generation
 	public NN(int numInputs, int numOutputs, int numHiddenLayers, int widthHiddenLayers) {
 		inputs = new InputNeuron[numInputs + 1];
@@ -172,6 +176,55 @@ public class NN implements Comparable<NN>, Serializable {
 	 * hidden[hidden.length][h].addConnection(c); outputs[out].addConnection(c); } }
 	 * }
 	 */
+	
+	public float[] rotateBoard(float[] board) {
+		ArrayList<Float> temp = new ArrayList<Float>();
+		float[] res = new float[9];
+		switch(randomFactor) {
+			case 0:
+				res = board;
+			case 1:
+				temp.add(board[2]);
+				temp.add(board[5]);
+				temp.add(board[8]);
+				temp.add(board[1]);
+				temp.add(board[4]);
+				temp.add(board[7]);
+				temp.add(board[0]);
+				temp.add(board[3]);
+				temp.add(board[6]);
+				break;
+			case 2:
+				temp.add(board[8]);
+				temp.add(board[7]);
+				temp.add(board[6]);
+				temp.add(board[5]);
+				temp.add(board[4]);
+				temp.add(board[3]);
+				temp.add(board[2]);
+				temp.add(board[1]);
+				temp.add(board[0]);
+				break;
+			case 3:
+				temp.add(board[6]);
+				temp.add(board[3]);
+				temp.add(board[0]);
+				temp.add(board[7]);
+				temp.add(board[4]);
+				temp.add(board[1]);
+				temp.add(board[8]);
+				temp.add(board[5]);
+				temp.add(board[2]);
+				break;
+		}
+		if (randomFactor != 0) {
+			for (int i = 0; i < 9; i++) {
+				res[i] = temp.get(i);
+			}
+		}
+		
+		return res;
+	}
 
 	public void adjustWeights(int changeChance) {
 		for (Neuron n : neurons) {
@@ -191,7 +244,9 @@ public class NN implements Comparable<NN>, Serializable {
 		}
 	}
 
-	public int makeMove(float[] board) {
+	public int makeMove(float[] b, int playerOrder) {
+		randomFactor = rnd.nextInt(4);
+		float[] board = rotateBoard(b);
 		ArrayList<Float> newBoard = new ArrayList<Float>();
 		for (Float f : board) {
 			if (f == 1) {
@@ -206,12 +261,26 @@ public class NN implements Comparable<NN>, Serializable {
 				newBoard.add((float) 0);
 			}
 		}
-		float[] newBoardFloat = new float[newBoard.size()];
+		float[] newBoardFloat = new float[newBoard.size() + 1];
 		for (int i = 0; i < newBoard.size(); i++) {
 			newBoardFloat[i] = newBoard.get(i);
 		}
+		newBoardFloat[newBoardFloat.length - 1] = (float)playerOrder;
 		ArrayList<Float> out = feedForward(newBoardFloat);
-		
+		//System.out.println(out);
+		float[] tempOut = new float[9];
+		for(int i = 0; i < 9; i++) {
+			tempOut[i] = out.get(i);
+		}
+		for (int i = 0; i < 3; i++) {
+			tempOut = rotateBoard(tempOut);
+			board = rotateBoard(board);
+		}
+		out.clear();
+		for(Float f : tempOut) {
+			out.add(f);
+		}
+		//System.out.println(out);
 //		for(Float f : board) {
 //			System.out.print(f + ", ");
 //		}
@@ -253,15 +322,24 @@ public class NN implements Comparable<NN>, Serializable {
 		return returnOutputs;
 	}
 
-	public void reportResult(int turns, int won) {
+	public void reportResult(int turns, int points, boolean won) {
+		
 		turnCounts.add(turns);
 		tempCount = 0;
+		if (!won) {
+			losingTurnCount += turns;
+			losingGamesNumber++;
+		}
 		for (Integer i : turnCounts) {
 			tempCount += i;
 		}
-		turnAverage = tempCount / turnCounts.size();
+		try {
+			turnAverage = (tempCount - losingTurnCount) / (turnCounts.size() - losingGamesNumber);
+		} catch (ArithmeticException e) {
+			turnAverage = 10;
+		}
 
-		winCount += won;
+		winCount += points;
 		
 	}
 
@@ -269,9 +347,9 @@ public class NN implements Comparable<NN>, Serializable {
 		if (winCount > n.winCount) {
 			return -1;
 		} else if (winCount == n.winCount) {
-			if (turnAverage > n.turnAverage) {
+			if (turnAverage < n.turnAverage) {
 				return -1;
-			} else if (turnAverage < n.turnAverage) {
+			} else if (turnAverage > n.turnAverage) {
 				return 1;
 			} else {
 				return 0;
@@ -283,13 +361,21 @@ public class NN implements Comparable<NN>, Serializable {
 	}
 
 	public static void main(String[] args) {
-		NN nn = new NN(9, 9, 3, 5);
-		float[] board = { 0, 0, 0, 0, 0, 0, 0, 0, 0 };
-		System.out.println(nn.makeMove(board));
-//		for (int i = 0; i < 1000; i++) {
-		nn.adjustWeights(20);
-//		}
-		System.out.println(nn.makeMove(board));
+		NN nn = new NN(18, 9, 3, 5);
+		nn.randomFactor = 2;
+		float[] board = { 1, 0, 0, 0, 0, 0, 0, 1, 1 };
+		for(float f : board) {
+			System.out.print(f + ", ");
+		}
+		System.out.println();
+		for (int i = 0; i < 3; i++) {
+			board = nn.rotateBoard(board);
+		}
+		for(float f : board) {
+			System.out.print(f + ", ");
+		}
+		System.out.println();
+		
 		
 	}
 }

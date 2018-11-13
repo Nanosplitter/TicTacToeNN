@@ -12,7 +12,7 @@ public class HumanNN extends NN {
 		super(numInputs, numOutputs, numHiddenLayers, widthHiddenLayers);
 	}
 	
-	public synchronized int makeMove(float[] board) {
+	public synchronized int makeMove(float[] board, int playerOrder) {
 		updateBoard(board);
 		return scan.nextInt();
 	}

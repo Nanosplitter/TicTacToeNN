@@ -18,7 +18,7 @@ public class Generation implements Serializable {
 	public Generation(int numNets) {
 		genSize = numNets;
 		for (int i = 0; i < numNets; i++) {
-			gen.add(new NN(18, 9, 3, 7));
+			gen.add(new NN(19, 9, 4, 6));
 		}
 	}
 	
@@ -49,16 +49,16 @@ public class Generation implements Serializable {
 		}
 		
 		//System.out.println(bestNN.size());
-		for (int i = 0; i < genSize - 14; i++) {
+		for (int i = 0; i < genSize - 24; i++) {
 			NN net = SerializationUtils.clone(bestNN.get(rnd.nextInt(189)));
 			net.turnAverage = 0;
 			net.turnCounts.clear();
 			net.winCount = 0;
-			net.adjustWeights(30);
+			net.adjustWeights(3);
 			gen.add(net);
 		}
-		for (int i = 0; i < 10; i++) {
-			gen.add(new NN(18, 9, 3, 7));
+		for (int i = 0; i < 20; i++) {
+			gen.add(new NN(19, 9, 4, 6));
 		}
 	}
 	

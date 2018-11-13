@@ -167,5 +167,20 @@ public class BoardState {
 		return c;
 	}
 	
+	public static void main(String[] args) {
+		ArrayList<Character> b = new ArrayList<Character>();
+		b.add('O');
+		b.add('O');
+		b.add(' ');
+		b.add(' ');
+		b.add('X');
+		b.add(' ');
+		b.add(' ');
+		b.add('X');
+		b.add(' ');
+		
+		BoardState bs = new BoardState(b);
+		System.out.println(bs.checkDanger(' '));
+	}
 	
 }
